@@ -1,4 +1,5 @@
 import React,{useRef,useEffect, useState} from 'react'
+import { io } from 'socket.io-client';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/editor/editor.worker';
 import 'monaco-editor/esm/vs/language/typescript/ts.worker';
@@ -7,17 +8,30 @@ import 'monaco-editor/esm/vs/language/html/html.worker';
 import 'monaco-editor/esm/vs/language/css/css.worker';
 
 function CodeEditor() {
+const socket = io("http://localhost:3000")    
 const [language, setLanguage] = useState('javascript');
 const editorRef = useRef<HTMLDivElement | null>(null)
 const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
 useEffect(() => {
     if(editorRef.current){
-        monaco.editor.create(editorRef.current,{
+       const editor =  monaco.editor.create(editorRef.current,{
             value: 'start coding here',
             language: 'javascript',
             theme:'vs-dark'
         })
+    
+        editor.onDidChangeModelContent(() => {
+            socket.emit("code-update", editor.getValue());
+        })
+
+        socket.on("code-update", (updatedCode) => {
+            const currentModel = editor.getModel();
+            if (currentModel) {
+                monaco.editor.getModel(currentModel.uri)?.setValue(updatedCode);
+            }
+        })
+
     }
 
     return () => {
