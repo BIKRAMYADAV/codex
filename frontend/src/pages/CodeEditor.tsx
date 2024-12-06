@@ -1,17 +1,30 @@
 import React,{useRef,useEffect, useState} from 'react'
 import { io } from 'socket.io-client';
 import * as monaco from 'monaco-editor';
+const apiUrl = 'http://localhost:3000'
 import 'monaco-editor/esm/vs/editor/editor.worker';
 import 'monaco-editor/esm/vs/language/typescript/ts.worker';
 import 'monaco-editor/esm/vs/language/json/json.worker';
 import 'monaco-editor/esm/vs/language/html/html.worker';
 import 'monaco-editor/esm/vs/language/css/css.worker';
+import axios from 'axios';
 
 function CodeEditor() {
-const socket = io("http://localhost:3000")    
+const socket = io(apiUrl)    
 const [language, setLanguage] = useState('javascript');
+const [execute, setExecute] = useState(false);
+const [output, setOutput] = useState('');
 const editorRef = useRef<HTMLDivElement | null>(null)
 const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+const runCode = async (editor:any) => {
+        const code = editor.getValue();
+        const response = await axios.post(apiUrl+'/execute', {
+            code, 
+            language
+        });
+      setOutput(response.data.output);
+}
 
 useEffect(() => {
     if(editorRef.current){
@@ -31,6 +44,10 @@ useEffect(() => {
                 monaco.editor.getModel(currentModel.uri)?.setValue(updatedCode);
             }
         })
+       if(execute){
+        console.log('run was clicked');
+        runCode(editor);
+       }
 
     }
 
@@ -60,6 +77,7 @@ useEffect(() => {
           <option value="css">CSS</option>
           <option value="python">Python</option>
         </select>
+        <button className='text-white' onClick={() => setExecute(true)}>run</button>
     </div>
     <div ref={editorRef} style={{height: '100vh',width: '100%'}}/>
 
