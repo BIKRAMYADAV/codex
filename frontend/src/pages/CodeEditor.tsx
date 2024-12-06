@@ -17,13 +17,19 @@ const [output, setOutput] = useState('');
 const editorRef = useRef<HTMLDivElement | null>(null)
 const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
-const runCode = async (editor:any) => {
-        const code = editor.getValue();
-        const response = await axios.post(apiUrl+'/execute', {
-            code, 
-            language
-        });
+const runCode = async () => {
+  
+    const code = monacoInstance.current?.getValue();
+    try {
+      const response = await axios.post(`${apiUrl}/execute`, {
+        code,
+        language,
+      });
       setOutput(response.data.output);
+    } catch (error) {
+      console.error('Error executing code:', error);
+      setOutput('Error executing code.');
+    }
 }
 
 useEffect(() => {
@@ -33,6 +39,8 @@ useEffect(() => {
             language: 'javascript',
             theme:'vs-dark'
         })
+
+        monacoInstance.current = editor
     
         editor.onDidChangeModelContent(() => {
             socket.emit("code-update", editor.getValue());
@@ -44,15 +52,13 @@ useEffect(() => {
                 monaco.editor.getModel(currentModel.uri)?.setValue(updatedCode);
             }
         })
-       if(execute){
-        console.log('run was clicked');
-        runCode(editor);
-       }
+    
 
     }
 
     return () => {
         monacoInstance.current?.dispose();
+        // socket.disconnect();
       };
 },[]);
 
@@ -77,10 +83,18 @@ useEffect(() => {
           <option value="css">CSS</option>
           <option value="python">Python</option>
         </select>
-        <button className='text-white' onClick={() => setExecute(true)}>run</button>
+        <button
+          className="ml-4 bg-blue-500 text-white px-4 py-1 rounded"
+          onClick={runCode}
+        >
+          Run
+        </button>
     </div>
     <div ref={editorRef} style={{height: '100vh',width: '100%'}}/>
-
+    <div className="bg-gray-800 text-white p-4">
+        <h3>Output:</h3>
+        <pre>{output}</pre>
+      </div>
     </div>
   )
 }
