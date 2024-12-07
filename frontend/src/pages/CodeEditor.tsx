@@ -58,7 +58,7 @@ useEffect(() => {
 
     return () => {
         monacoInstance.current?.dispose();
-        // socket.disconnect();
+        // socket.disconnect(); 
       };
 },[]);
 
@@ -81,7 +81,7 @@ useEffect(() => {
           <option value="json">JSON</option>
           <option value="html">HTML</option>
           <option value="css">CSS</option>
-          <option value="python">Python</option>
+          <option value="python">python</option>
         </select>
         <button
           className="ml-4 bg-blue-500 text-white px-4 py-1 rounded"
@@ -90,10 +90,12 @@ useEffect(() => {
           Run
         </button>
     </div>
+    <div className='flex'>
     <div ref={editorRef} style={{height: '100vh',width: '100%'}}/>
-    <div className="bg-gray-800 text-white p-4">
+    <div className="bg-gray-800 text-white p-4 w-1/2">
         <h3>Output:</h3>
         <pre>{output}</pre>
+      </div>
       </div>
     </div>
   )
