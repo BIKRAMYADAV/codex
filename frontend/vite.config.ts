@@ -1,8 +1,27 @@
-import { defineConfig } from 'vite'
-import monacoEditorPlugin from 'vite-plugin-monaco-editor';
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'url';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-})
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split Monaco editor into its own chunk
+          monaco: ['monaco-editor'],
+        },
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+  worker: {
+    format: 'es', // Use ES module workers for better compatibility
+    plugins: [],
+  },
+});
+

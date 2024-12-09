@@ -9,10 +9,10 @@ import 'monaco-editor/esm/vs/language/html/html.worker';
 import 'monaco-editor/esm/vs/language/css/css.worker';
 import axios from 'axios';
 
-function CodeEditor() {
 const socket = io(apiUrl)    
+
+function CodeEditor() {
 const [language, setLanguage] = useState('javascript');
-const [execute, setExecute] = useState(false);
 const [output, setOutput] = useState('');
 const editorRef = useRef<HTMLDivElement | null>(null)
 const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -43,12 +43,13 @@ useEffect(() => {
         monacoInstance.current = editor
     
         editor.onDidChangeModelContent(() => {
-            socket.emit("code-update", editor.getValue());
+            const currentCode = editor.getValue();
+            socket.emit("code-update", currentCode);
         })
 
         socket.on("code-update", (updatedCode) => {
             const currentModel = editor.getModel();
-            if (currentModel) {
+            if (currentModel && editor.getValue() !== updatedCode) {
                 monaco.editor.getModel(currentModel.uri)?.setValue(updatedCode);
             }
         })
@@ -58,7 +59,7 @@ useEffect(() => {
 
     return () => {
         monacoInstance.current?.dispose();
-        // socket.disconnect(); 
+         socket.off("code-update"); 
       };
 },[]);
 
