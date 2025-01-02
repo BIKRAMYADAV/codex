@@ -11,6 +11,12 @@ const apiUrl = "http://localhost:3000"
 const PORT = process.env.PORT
 
 const app = express()
+app.use(
+    cors({
+      origin: 'http://localhost:5173', 
+       methods: ["GET", "POST"]// Replace with your frontend's origin
+    })
+  );
 
 const server = http.createServer(app);
 
@@ -21,9 +27,8 @@ const io = new Server(server, {
     }
 })
 
-
 io.on('connection', (socket) => {
-    console.log("A user connected");
+    // console.log("A user connected");
 
     socket.on('code-update', (code) => {
         socket.broadcast.emit('code-update', code);
@@ -36,13 +41,15 @@ io.on('connection', (socket) => {
 
 app.use(express.json());
 
+
 app.post('/execute', (req, res) => {
     const {code, language} = req.body;
+    console.log('The code recieved was: ',code);
     const filepath = `temp.${language}`;
     fs.writeFileSync(filepath,code);
 
     const command = 
-    language === "python"? `python3 ${filepath}` : language === "javascript" ? `node ${filepath}`: null;
+    language === "python"? `python3 ${filepath}` : language === "javascript" ? `node ${filepath}`: language === "cpp" ? `g++ ${filepath}` : null;
 
     if (command) {
         exec(command, (error,stdout,stderr) => {

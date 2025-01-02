@@ -14,6 +14,7 @@ const socket = io(apiUrl)
 function CodeEditor() {
 const [language, setLanguage] = useState('javascript');
 const [output, setOutput] = useState('');
+console.log('The output being set is : ',output);
 const editorRef = useRef<HTMLDivElement | null>(null)
 const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -21,10 +22,12 @@ const runCode = async () => {
   
     const code = monacoInstance.current?.getValue();
     try {
+      console.log('The code being sent is : ',code,' language: ',language);
       const response = await axios.post(`${apiUrl}/execute`, {
         code,
         language,
       });
+  
       setOutput(response.data.output);
     } catch (error) {
       console.error('Error executing code:', error);
@@ -77,6 +80,8 @@ useEffect(() => {
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
         >
+          <option value="cpp">C++</option>
+          <option value="java">Java</option>
           <option value="javascript">JavaScript</option>
           <option value="typescript">TypeScript</option>
           <option value="json">JSON</option>
