@@ -47,15 +47,19 @@ app.post('/execute', (req, res) => {
     console.log('The code recieved was: ',code);
     const filepath = `temp.${language}`;
     fs.writeFileSync(filepath,code);
+  
+    const isWindows = process.platform === 'win32';
 
     const command = 
-    language === "python"? `python3 ${filepath}` : language === "javascript" ? `node ${filepath}`: language === "cpp" ? `g++ ${filepath}` : null;
-
+    language === "python"? `python3 ${filepath}` : language === "javascript" ? `node ${filepath}`: language === "cpp" ? `g++ ${filepath} -o temp && ${isWindows ? 'temp.exe' : './temp'}` : null;
+    console.log("command id",command);
     if (command) {
         exec(command, (error,stdout,stderr) => {
             if (error) {
+                console.log('there was an error')
                 res.json({output : stderr});
             } else {
+                console.log('here is the output:',stdout);
                 res.json({ output : stdout});
             }
         })
