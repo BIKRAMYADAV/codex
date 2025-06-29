@@ -8,10 +8,13 @@ import 'monaco-editor/esm/vs/language/json/json.worker';
 import 'monaco-editor/esm/vs/language/html/html.worker';
 import 'monaco-editor/esm/vs/language/css/css.worker';
 import axios from 'axios';
-
+import NicknamePrompt from '../components/NicknamePrompt';
 const socket = io(apiUrl)    
 
 function CodeEditor() {
+  const [username, setUsername] = useState('');
+  const [nickname, setNickname] = useState('')
+
 const [language, setLanguage] = useState('javascript');
 const [output, setOutput] = useState('');
 console.log('The output being set is : ',output);
@@ -72,6 +75,17 @@ useEffect(() => {
     }
   }, [language]);
 
+
+  if(!nickname){
+    return(
+      <NicknamePrompt
+      username={username}
+      setUsername={setUsername}
+      setNickname={setNickname}
+      />
+    )
+  }
+
   return (
     <div>
     <div className='bg-black p-2'>
@@ -95,6 +109,7 @@ useEffect(() => {
         >
           Run
         </button>
+         <div className="font-semibold text-green-400">👤 {nickname}</div>
     </div>
     <div className='flex'>
     <div ref={editorRef} style={{height: '100vh',width: '100%'}}/>
