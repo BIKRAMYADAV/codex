@@ -47,6 +47,11 @@ useEffect(() => {
         })
 
         monacoInstance.current = editor
+         setTimeout(() => {
+      editor.layout(); // 👈 Force layout after mounting
+    }, 0);
+    requestAnimationFrame(() => editor.layout());
+    console.log('the size of the edittor: ',editorRef.current?.getBoundingClientRect());
     
         editor.onDidChangeModelContent(() => {
             const currentCode = editor.getValue();
@@ -67,7 +72,7 @@ useEffect(() => {
         monacoInstance.current?.dispose();
          socket.off("code-update"); 
       };
-},[]);
+},[nickname]);
 
 useEffect(() => {
     if (monacoInstance.current) {
@@ -87,38 +92,50 @@ useEffect(() => {
   }
 
   return (
-    <div>
-    <div className='bg-black p-2'>
-        select language:
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-        >
-          <option value="cpp">C++</option>
-          <option value="java">Java</option>
-          <option value="javascript">JavaScript</option>
-          <option value="typescript">TypeScript</option>
-          <option value="json">JSON</option>
-          <option value="html">HTML</option>
-          <option value="css">CSS</option>
-          <option value="python">python</option>
-        </select>
-        <button
-          className="ml-4 bg-blue-500 text-white px-4 py-1 rounded"
-          onClick={runCode}
-        >
-          Run
-        </button>
-         <div className="font-semibold text-green-400">👤 {nickname}</div>
+<div className="flex h-screen flex-col">
+  {/* Top bar */}
+  <div className="bg-black text-white px-4 py-2 flex justify-between items-center">
+    <div className="space-x-2">
+      <label htmlFor="language">Select language:</label>
+      <select
+        id="language"
+        className="text-black rounded px-2 py-1"
+        value={language}
+        onChange={(e) => setLanguage(e.target.value)}
+      >
+        <option value="cpp">C++</option>
+        <option value="java">Java</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="json">JSON</option>
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="python">Python</option>
+      </select>
+      <button
+        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+        onClick={runCode}
+      >
+        Run
+      </button>
     </div>
-    <div className='flex'>
-    <div ref={editorRef} style={{height: '100vh',width: '100%'}}/>
-    <div className="bg-gray-800 text-white p-4 w-1/2">
-        <h3>Output:</h3>
-        <pre>{output}</pre>
-      </div>
-      </div>
+    <div className="text-green-400 font-semibold">👤 {nickname}</div>
+  </div>
+
+  {/* Editor + Output */}
+  <div className="flex flex-1 overflow-hidden h-full">
+    {/* Editor */}
+    <div className="w-2/3 h-full">
+      <div ref={editorRef} className="w-full h-full" />
     </div>
+
+    {/* Output */}
+    <div className="w-1/3 bg-gray-800 text-white p-4 overflow-auto">
+      <h3 className="text-lg font-semibold mb-2">Output:</h3>
+      <pre className="whitespace-pre-wrap break-words">{output}</pre>
+    </div>
+  </div>
+</div>
   )
 }
 
