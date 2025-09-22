@@ -1,11 +1,9 @@
 import React from 'react'
-
 interface INickname{
     username: string;
     setUsername: (name:string) => void;
     setNickname: (name:string) => void;
 }
-
 const NicknamePrompt:React.FC<INickname> = ({username, setUsername, setNickname}) => {
 
   return (

@@ -8,7 +8,7 @@ import 'monaco-editor/esm/vs/language/json/json.worker';
 import 'monaco-editor/esm/vs/language/html/html.worker';
 import 'monaco-editor/esm/vs/language/css/css.worker';
 import axios from 'axios';
-import NicknamePrompt from '../components/NicknamePrompt';
+import NicknamePrompt from '../components/NicknamePrompt.tsx';
 const socket = io(apiUrl)    
 
 function CodeEditor() {
