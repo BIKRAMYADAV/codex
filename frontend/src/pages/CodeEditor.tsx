@@ -1,7 +1,7 @@
 import {useRef,useEffect, useState} from 'react'
 import { io } from 'socket.io-client';
 import * as monaco from 'monaco-editor';
-const apiUrl = 'http://localhost:3000'
+const apiUrl = 'https://codex-backend-71uq.onrender.com'
 import 'monaco-editor/esm/vs/editor/editor.worker';
 import 'monaco-editor/esm/vs/language/typescript/ts.worker';
 import 'monaco-editor/esm/vs/language/json/json.worker';
