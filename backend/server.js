@@ -11,12 +11,7 @@ const apiUrl = "http://localhost:3000"
 const PORT = process.env.PORT
 
 const app = express()
-app.use(
-    cors({
-      origin: 'http://localhost:5173', 
-       methods: ["GET", "POST"]// Replace with your frontend's origin
-    })
-  );
+app.use(cors());
 
 const server = http.createServer(app);
 
@@ -47,7 +42,6 @@ app.post('/execute', (req, res) => {
     console.log('The code recieved was: ',code);
     const filepath = `temp.${language}`;
     fs.writeFileSync(filepath,code);
-  
     const isWindows = process.platform === 'win32';
 
     const command = 
