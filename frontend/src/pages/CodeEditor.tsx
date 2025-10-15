@@ -7,8 +7,11 @@ import 'monaco-editor/esm/vs/language/typescript/ts.worker';
 import 'monaco-editor/esm/vs/language/json/json.worker';
 import 'monaco-editor/esm/vs/language/html/html.worker';
 import 'monaco-editor/esm/vs/language/css/css.worker';
+import { v4 as uuidv4} from 'uuid'
 import axios from 'axios';
 import NicknamePrompt from '../components/NicknamePrompt.tsx';
+
+const clientId = uuidv4();
 const socket = io(apiUrl)    
 
 function CodeEditor() {
@@ -17,7 +20,7 @@ function CodeEditor() {
 
 const [language, setLanguage] = useState('javascript');
 const [output, setOutput] = useState('');
-console.log('The output being set is : ',output);
+
 const editorRef = useRef<HTMLDivElement | null>(null)
 const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -38,41 +41,49 @@ const runCode = async () => {
     }
 }
 
+//to fix flickering
 useEffect(() => {
-    if(editorRef.current){
-       const editor =  monaco.editor.create(editorRef.current,{
-            value: 'start coding here',
-            language: 'javascript',
-            theme:'vs-dark'
-        })
+  if (editorRef.current) {
+    const editor = monaco.editor.create(editorRef.current, {
+      value: 'start coding here',
+      language: 'javascript',
+      theme: 'vs-dark',
+    });
 
-        monacoInstance.current = editor
-         setTimeout(() => {
-      editor.layout(); // 👈 Force layout after mounting
-    }, 0);
+    monacoInstance.current = editor;
+
+    // ensure layout
+    setTimeout(() => editor.layout(), 0);
     requestAnimationFrame(() => editor.layout());
-    console.log('the size of the edittor: ',editorRef.current?.getBoundingClientRect());
-    
-        editor.onDidChangeModelContent(() => {
-            const currentCode = editor.getValue();
-            socket.emit("code-update", currentCode);
-        })
 
-        socket.on("code-update", (updatedCode) => {
-            const currentModel = editor.getModel();
-            if (currentModel && editor.getValue() !== updatedCode) {
-                monaco.editor.getModel(currentModel.uri)?.setValue(updatedCode);
-            }
-        })
-    
+    let isRemoteUpdate = false; // <-- prevent echo loops
 
-    }
+    // Listen for local edits
+    editor.onDidChangeModelContent(() => {
+      if (isRemoteUpdate) return; // skip emitting if change came from socket
+      const currentCode = editor.getValue();
+      socket.emit('code-update', { code: currentCode, sender: clientId });
+    });
+
+    // Listen for incoming socket updates
+    socket.on('code-update', ({ code, sender }) => {
+      if (sender === clientId) return; // ignore own updates
+
+      const model = editor.getModel();
+      if (model && editor.getValue() !== code) {
+        isRemoteUpdate = true; // <-- mark incoming update
+        const fullRange = model.getFullModelRange();
+        editor.executeEdits('', [{ range: fullRange, text: code }]);
+        isRemoteUpdate = false; // <-- unmark after applying
+      }
+    });
 
     return () => {
-        monacoInstance.current?.dispose();
-         socket.off("code-update"); 
-      };
-},[nickname]);
+      monacoInstance.current?.dispose();
+      socket.off('code-update');
+    };
+  }
+}, [nickname]);
 
 useEffect(() => {
     if (monacoInstance.current) {
